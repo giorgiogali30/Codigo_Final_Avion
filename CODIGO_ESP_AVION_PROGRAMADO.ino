@@ -412,22 +412,78 @@ void DETECCION() {
 
     //  Funcion para mantener direccion en X a inclinacion de 10°  (Inlinacion del giro alrededor del eje X)  //
 void ajusteASCENSO(float valorPitch, float valorRoll, float valorYaw) {
-            //  PITCH //
-  float pitchTarget = 10;  // Ángulo de pitch objetivo (10°)
-  if (valorPitch != 0) {
+  //          PROPORCIONAL/INTEGRAL - Pitch         //
+  //Proporcional
+  // Ajuste del servo del estabilizador horizontal
+  float pitchTarget = 100;  // Ángulo de pitch objetivo (100°)
+  if (valorPitch != 100) {
     float pitchError = pitchTarget - valorPitch; // Cálculo del error de pitch
-    float estabServoAngle = -pitchError; // Inversión del ángulo para compensar la inclinación
-    estab.write(map(estabServoAngle, -10, 10, 2, 178)); // Mapeo del rango de ángulos del servo
+    float estabServoAngle = valorPitch; // Inversión del ángulo para compensar la inclinación
+    // Control Integral - Pitch
+    integralPitch += pitchError; // Acumula el error de pitch
+    // Cálculo de la salida del control integral
+    float integralOutputPitch = 0.1 * integralPitch; // Ajusta el factor de ganancia según sea necesario
+    // Control Derivativo - Pitch
+    float derivativePitch = pitchError - lastErrorPitch; // Cálculo del término derivativo
+    // Cálculo de la salida del control derivativo
+    float derivativeOutputPitch = 0.1 * derivativePitch; // Ajusta el factor de ganancia según sea necesario
+    // Actualizar el valor del error anterior
+    lastErrorPitch = pitchError;
+    // Suma la salida del control proporcional, integral y derivativo
+    estabServoAngle += integralOutputPitch + derivativeOutputPitch;
+    // Mapeo del rango de ángulos del servo
+    int estabServoPos = map(estabServoAngle, -10, 10, 45, 135);
+    // Escribir la posición final del servo
+    estab.write(estabServoPos);
   }
+  //          PROPORCIONAL/INTEGRAL - Roll         //
             // ROLL //
-  if (valorRoll != 0) {
-    float rollServoAngle = -valorRoll; // Inversión del ángulo para compensar la inclinación
-    alerones.write(map(rollServoAngle, -10, 10, 2, 178)); // Mapeo del rango de ángulos del servo
+  //Proporcional
+  float rollTarget = 90;  // Ángulo de roll objetivo (90°) - Estable
+  if (valorRoll != 90) {
+    // Cálculo del error de roll
+    float rollError = rollTarget - valorRoll;
+    // Control Proporcional - Roll
+    float proportionalOutputRoll = -rollError;
+    // Control Integral - Roll
+    integralRoll += rollError; // Acumula el error de roll
+    float integralOutputRoll = 0.1 * integralRoll; // Cálculo de la salida del control integral
+    // Control Derivativo - Roll (Si deseas agregarlo)
+    // Cálculo del término derivativo
+    float derivativeRoll = rollError - lastErrorRoll;
+    float derivativeOutputRoll = 0.1 * derivativeRoll; // Cálculo de la salida del control derivativo
+    // Actualizar el valor del error anterior
+    lastErrorRoll = rollError;
+    // Suma la salida del control proporcional, integral y derivativo
+    float controlOutputRoll = proportionalOutputRoll + integralOutputRoll + derivativeOutputRoll;
+    // Mapeo del rango de ángulos del servo
+    int aleronesServoPos = map(controlOutputRoll, -10, 10, 45, 135);
+    // Escribir la posición final del servo
+    alerones.write(aleronesServoPos);
   }
+  //          PROPORCIONAL/INTEGRAL - Yaw         //
             // YAW  //
-  if (valorYaw != 0) {
-    float yawServoAngle = -valorYaw; // Inversión del ángulo para compensar la inclinación
-    rudder.write(map(yawServoAngle, -10, 10, 2, 178)); // Mapeo del rango de ángulos del servo
+  float yawTarget = 180;  // Ángulo de roll objetivo (180°) - Estable
+  if (valorYaw != 180) {
+    // Cálculo del error de yaw
+    float yawError = yawTarget - valorYaw;
+    // Control Proporcional - Yaw
+    float proportionalOutputYaw = -yawError;
+    // Control Integral - Yaw
+    integralYaw += yawError; // Acumula el error de yaw
+    float integralOutputYaw = 0.1 * integralYaw; // Cálculo de la salida del control integral
+    // Control Derivativo - Yaw (Si deseas agregarlo)
+    // Cálculo del término derivativo
+    float derivativeYaw = yawError - lastErrorYaw;
+    float derivativeOutputYaw = 0.1 * derivativeYaw; // Cálculo de la salida del control derivativo
+    // Actualizar el valor del error anterior
+    lastErrorYaw = yawError;
+    // Suma la salida del control proporcional, integral y derivativo
+    float controlOutputYaw = proportionalOutputYaw + integralOutputYaw + derivativeOutputYaw;
+    // Mapeo del rango de ángulos del servo
+    int yawServoPos = map(controlOutputYaw, -10, 10, 45, 135);
+    // Escribir la posición final del servo
+    rudder.write(yawServoPos);
   }
 }
 
@@ -436,20 +492,78 @@ void ajusteASCENSO(float valorPitch, float valorRoll, float valorYaw) {
     //  Funcion para recto y nivelado (TODOS LOS EJES EN 0°)  //
 
 void adjustServos(float valorPitch, float valorRoll, float valorYaw) {
+  //          PROPORCIONAL/INTEGRAL - Pitch         //
+  //Proporcional
   // Ajuste del servo del estabilizador horizontal
-  if (valorPitch != 0) {
-    float pitchServoAngle = -valorPitch; // Inversión del ángulo para compensar la inclinación
-    estab.write(map(pitchServoAngle, -10, 10, 2, 178)); // Mapeo del rango de ángulos del servo
+  float pitchTarget = 90;  // Ángulo de pitch objetivo (90°)
+  if (valorPitch != 90) {
+    float pitchError = pitchTarget - valorPitch; // Cálculo del error de pitch
+    float estabServoAngle = valorPitch; // Inversión del ángulo para compensar la inclinación
+    // Control Integral - Pitch
+    integralPitch += pitchError; // Acumula el error de pitch
+    // Cálculo de la salida del control integral
+    float integralOutputPitch = 0.1 * integralPitch; // Ajusta el factor de ganancia según sea necesario
+    // Control Derivativo - Pitch
+    float derivativePitch = pitchError - lastErrorPitch; // Cálculo del término derivativo
+    // Cálculo de la salida del control derivativo
+    float derivativeOutputPitch = 0.1 * derivativePitch; // Ajusta el factor de ganancia según sea necesario
+    // Actualizar el valor del error anterior
+    lastErrorPitch = pitchError;
+    // Suma la salida del control proporcional, integral y derivativo
+    estabServoAngle += integralOutputPitch + derivativeOutputPitch;
+    // Mapeo del rango de ángulos del servo
+    int estabServoPos = map(estabServoAngle, -10, 10, 45, 135);
+    // Escribir la posición final del servo
+    estab.write(estabServoPos);
   }
-  // Ajuste del servos de alerones-
-  if (valorRoll != 0) {
-    float rollServoAngle = -valorRoll; // Inversión del ángulo para compensar la inclinación
-    alerones.write(map(rollServoAngle, -10, 10, 2, 178)); // Mapeo del rango de ángulos del servo
+  //          PROPORCIONAL/INTEGRAL - Roll         //
+            // ROLL //
+  //Proporcional
+  float rollTarget = 90;  // Ángulo de roll objetivo (90°)
+  if (valorRoll != 90) {
+    // Cálculo del error de roll
+    float rollError = rollTarget - valorRoll;
+    // Control Proporcional - Roll
+    float proportionalOutputRoll = -rollError;
+    // Control Integral - Roll
+    integralRoll += rollError; // Acumula el error de roll
+    float integralOutputRoll = 0.1 * integralRoll; // Cálculo de la salida del control integral
+    // Control Derivativo - Roll (Si deseas agregarlo)
+    // Cálculo del término derivativo
+    float derivativeRoll = rollError - lastErrorRoll;
+    float derivativeOutputRoll = 0.1 * derivativeRoll; // Cálculo de la salida del control derivativo
+    // Actualizar el valor del error anterior
+    lastErrorRoll = rollError;
+    // Suma la salida del control proporcional, integral y derivativo
+    float controlOutputRoll = proportionalOutputRoll + integralOutputRoll + derivativeOutputRoll;
+    // Mapeo del rango de ángulos del servo
+    int aleronesServoPos = map(controlOutputRoll, -10, 10, 45, 135);
+    // Escribir la posición final del servo
+    alerones.write(aleronesServoPos);
   }
-  // Ajuste del servo de rudder
-  if (valorYaw != 0) {
-    float yawServoAngle = -valorYaw; // Inversión del ángulo para compensar la inclinación
-    rudder.write(map(yawServoAngle, -10, 10, 2, 178)); // Mapeo del rango de ángulos del servo
+  //          PROPORCIONAL/INTEGRAL - Yaw         //
+            // YAW  //
+  float yawTarget = 180;  // Ángulo de roll objetivo (180°)
+  if (valorYaw != 180) {
+    // Cálculo del error de yaw
+    float yawError = yawTarget - valorYaw;
+    // Control Proporcional - Yaw
+    float proportionalOutputYaw = -yawError;
+    // Control Integral - Yaw
+    integralYaw += yawError; // Acumula el error de yaw
+    float integralOutputYaw = 0.1 * integralYaw; // Cálculo de la salida del control integral
+    // Control Derivativo - Yaw (Si deseas agregarlo)
+    // Cálculo del término derivativo
+    float derivativeYaw = yawError - lastErrorYaw;
+    float derivativeOutputYaw = 0.1 * derivativeYaw; // Cálculo de la salida del control derivativo
+    // Actualizar el valor del error anterior
+    lastErrorYaw = yawError;
+    // Suma la salida del control proporcional, integral y derivativo
+    float controlOutputYaw = proportionalOutputYaw + integralOutputYaw + derivativeOutputYaw;
+    // Mapeo del rango de ángulos del servo
+    int yawServoPos = map(controlOutputYaw, -10, 10, 45, 135);
+    // Escribir la posición final del servo
+    rudder.write(yawServoPos);
   }
 }
 
